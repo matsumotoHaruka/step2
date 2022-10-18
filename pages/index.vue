@@ -6,33 +6,40 @@
       <h2 class="sub-title">ToDoリスト</h2>
 
       <div class="todo_list_radio" id="todo_list_radio">
-        <input type="radio" :value="-1" v-model="radioValue" />すべて
+        <input type="radio" value="all" v-model="radioValue" />
+        <p class="todo_radio">すべて</p>
 
-        <input type="radio" :value="0" v-model="radioValue" />未完了
+        <input type="radio" value="yet" v-model="radioValue" />
+        <p class="todo_radio">未完了</p>
 
-        <input type="radio" :value="1" v-model="radioValue" />完了
+        <input type="radio" value="done" v-model="radioValue" />
+        <p class="todo_radio">完了</p>
 
         <p class="number">({{ filteredTodo.length }}件)</p>
       </div>
 
       <div class="container">
-        <h3>作成日時</h3>
-        <h3>メモ</h3>
+        <p class="made-time">作成日時</p>
+        <p class="memo">メモ</p>
       </div>
 
-      <ul>
+      <ul class="list">
         <li
           class="contents"
-          id="contents"
+          id="todo.date"
           v-for="todo in filteredTodo"
           :key="todo.id"
         >
           <input type="checkbox" v-model="todo.isDone" />
-          <p>{{ todo.date }}</p>
-          <p>{{ todo.note }}</p>
+          <p class="todo-date">
+            <span class="year">{{ todo.Year }}.</span>{{ todo.Month }}.{{ todo.Date }}.{{ todo.Hour }}:{{
+              todo.Min
+            }}
+          </p>
+          <p class="todo-note">{{ todo.note }}</p>
 
           <img
-            v-on:click="doRemove(todo)"
+            @click="doRemove(todo)"
             class="contents-img"
             src="~/assets/trash.svg"
           />
@@ -43,7 +50,7 @@
         <h2>新しい作業の追加</h2>
 
         <div id="add_box" class="add-box">
-          <p>メモ</p>
+          <label>メモ</label>
           <input
             v-model="searchText"
             type="text"
@@ -52,7 +59,7 @@
           />
           <button
             :disabled="!searchText"
-            v-on:click="addTodo"
+            @click="addTodo"
             type="button"
             class="button"
           >
@@ -70,8 +77,7 @@ export default {
     return {
       todos: [],
       searchText: "",
-      processing: false,
-      radioValue: -1,
+      radioValue: "all",
     };
   },
 
@@ -80,37 +86,32 @@ export default {
       const now = new Date();
       this.todos.push({
         isDone: false,
-        date: now.toLocaleString(),
+        Year: now.getFullYear(),
+        Month: now.getMonth() + 1,
+        Date: now.getDate(),
+        Hour: now.getHours(),
+        Min: now.getMinutes(),
         note: this.searchText,
       });
+      this.searchText = null;
     },
 
-    doRemove: function (todo) {
-      var todos = this.todos;
-      var index = todos.indexOf(todo);
-      todos.splice(index, 1);
+    doRemove(todo) {
+      const index = this.todos.indexOf(todo);
+      this.todos.splice(index, 1);
     },
-
-    noText() {
-      if (this.searchText == "") {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    
   },
 
   computed: {
-    filteredTodo: function () {
-      if (this.radioValue === -1) {
+    filteredTodo() {
+      if (this.radioValue === "all") {
         return this.todos;
-      } else if (this.radioValue === 0) {
+      } else if (this.radioValue === "yet") {
         return this.todos.filter((todo) => !todo.isDone);
-      } else if (this.radioValue === 1) {
+      } else if (this.radioValue === "done") {
         return this.todos.filter((todo) => todo.isDone);
       }
-      return []
+      return [];
     },
   },
 };
@@ -118,59 +119,118 @@ export default {
 
 <style>
 .mission {
-  padding: 20px 150px;
+  margin-left: 400px;
+  margin-top: 96px;
 }
 
 .title {
-  padding-bottom: 5%;
+  padding-bottom: 48px;
 }
 
 .todo_list_radio {
   display: flex;
   align-items: center;
+  margin-bottom: 24px;
 }
 
-.todo_list_radio input {
-  left: 0;
-  margin-left: 50px;
+.todo_list_radio  input{
+  margin: 0;
+}
+
+.todo_radio {
+  width: 50px;
+  margin-left: 8px;
+  margin-right: 24px;
+  font-weight: 300;
+}
+
+.list {
+  width: 382px;
+  padding-left: 0;
 }
 
 .number {
-  margin-left: 50px;
+  left: 45px;
 }
 
 .container {
-  margin-left: 85px;
+  margin-left: 45px;
   display: flex;
-  gap: 105px;
+  font-weight: 600;
+}
+
+.made-time {
+  width: 96px;
+  margin-right:24px;
 }
 
 .contents {
   display: flex;
-  gap: 30px;
   align-items: center;
 }
 
+.todo-date {
+  width: 200px;
+  font-size: 14px;
+}
+
+.todo-note {
+  width: 382px;
+  height: 21px;
+  font-size: 14px;
+  margin-left: 20px;
+}
+
 .contents-img {
-  position: absolute;
-  margin-left: 650px;
+  margin-left: 24px;
 }
 
 .add-box {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 30px;
 }
 
 .box {
-  width: 300px;
+  width: 200px;
   height: 20px;
 }
 
 .button {
-  background-color: rgb(9, 217, 245);
+  color: #fff;
+  background-color: #808080;
   border-radius: 15px;
   border: none;
   padding: 3px 20px;
+}
+
+@media screen and (max-width: 480px) {
+  .mission {
+    margin-left: 16px;
+  }
+  
+  .todo_radio {
+    font-size: 14px;
+  }
+  .year{
+    display:none;
+  }
+  .container {
+    font-size:14px;
+  }
+  .todo-date{
+    margin-left:23px;
+    width:96px;
+  }
+  .todo-note {
+    width:132px;
+  }
+  .memo{
+    width:50px;
+  }
+  .button {
+    display: block;
+  }
 }
 </style>
